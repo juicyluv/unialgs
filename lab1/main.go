@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"labs/pkg/tools"
 	"math/rand"
-	"os"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -20,13 +17,14 @@ type Array struct {
 
 func (a *Array) Push(value int) {
 	t := time.Now()
-	defer measureTime(t)
+
 	a.arr = append(a.arr, value)
+
+	tools.MeasureTime(t)
 }
 
 func (a *Array) Delete(value int) error {
 	t := time.Now()
-	defer measureTime(t)
 
 	index := a.Search(value)
 	if index == -1 {
@@ -34,18 +32,23 @@ func (a *Array) Delete(value int) error {
 	}
 
 	a.arr = append(a.arr[:index], a.arr[index+1:]...)
+
+	tools.MeasureTime(t)
+
 	return nil
 }
 
 func (a *Array) Search(value int) int {
 	t := time.Now()
-	defer measureTime(t)
 
 	for i, v := range a.arr {
 		if v == value {
 			return i
 		}
 	}
+
+	tools.MeasureTime(t)
+
 	return -1
 }
 
@@ -77,7 +80,6 @@ func (a *Array) binarySearch(left, right, value int) int {
 
 func (a *Array) Sort() {
 	t := time.Now()
-	defer measureTime(t)
 
 	for i := range a.arr {
 		for j := range a.arr {
@@ -86,6 +88,8 @@ func (a *Array) Sort() {
 			}
 		}
 	}
+
+	tools.MeasureTime(t)
 }
 
 func (a *Array) String() string {
@@ -93,11 +97,14 @@ func (a *Array) String() string {
 }
 
 func NewRandomArray(n int) *Array {
+	t := time.Now()
 	temp := make([]int, n)
 
 	for i := range temp {
 		temp[i] = rand.Intn(maxRandomValue)
 	}
+
+	tools.MeasureTime(t)
 
 	return &Array{
 		arr: temp,
@@ -105,19 +112,8 @@ func NewRandomArray(n int) *Array {
 }
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Print("Enter array lenght: ")
-	text, err := reader.ReadString('\n')
-	if err != nil {
-		panic(err)
-	}
-	text = strings.Replace(text, "\n", "", -1)
-
-	n, err := strconv.Atoi(text)
-	if err != nil {
-		panic(text + " is not a number")
-	}
+	fmt.Print("Enter array length: ")
+	n := tools.ReadInt()
 
 	arr := NewRandomArray(n)
 	fmt.Printf("Created array: %v\n", arr)
@@ -128,10 +124,12 @@ func main() {
 	fmt.Printf("Array after inserting: %v\n", arr)
 
 	fmt.Printf("Deleting value 20...\n")
-	err = arr.Delete(20)
+	err := arr.Delete(20)
+
 	if err != nil {
 		panic("delete failed")
 	}
+
 	fmt.Printf("Array after deleting: %v\n", arr)
 
 	fmt.Println("Sorting...")
@@ -148,14 +146,10 @@ func main() {
 
 	fmt.Println("Finding negative number(should return -1)...")
 	notFoundIndex := arr.BinarySearch(-123)
+
 	if notFoundIndex == -1 {
 		fmt.Println("Element is not found")
 	} else {
 		panic("failed to find negative number")
 	}
-}
-
-func measureTime(t time.Time) {
-	duration := time.Since(t)
-	fmt.Printf("time elapsed: %v\n", duration)
 }
